@@ -1,0 +1,23 @@
+Package: ers
+Version: 1.0.0
+Title: Environmental Risk Score
+Type: Package
+Description: desc
+Authors@R: c(
+    person(given = "Sung Kyun", family = "Park", role = c("aut"), email = "sungkyun@umich.edu"),
+    person(given = "Bhramar", family = "Mukherjee", role = c("aut"), email = "bhramar@umich.edu"),
+    person(given = "Michael", family = "Kleinsasser", role = c("aut", "cre"), email = "mkleinsa@umich.edu"))
+License: GPL-2
+Encoding: UTF-8
+LazyData: true
+Biarch: true
+Depends: 
+    R (>= 3.5.0)
+Imports: 
+    gcdnet
+URL: https://github.com/umich-biostatistics/ers
+BugReports: https://github.com/umich-biostatistics/ers/issues
+RoxygenNote: 7.1.1
+Roxygen: list(markdown = TRUE)
+Suggests: 
+    testthat
