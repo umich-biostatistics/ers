@@ -1,9 +1,4 @@
 
-# standalone fit function for AENET
-ers.aenet = function() {
-  
-}
-
 # standalone function for steps 1-3 of algorithm
 ers.enet = function(x, y, lambda2, nfolds, foldid, pf, pf2, method) {
   cv.lambda2 = vapply(lambda2, function(lambda) {
@@ -24,39 +19,50 @@ adaptive.weights = function(coef, sd, n) {
   w = (abs(coef*sd) + 1/n)^(-gamma)
 }
 
-
-ers = function(x, y, conf, method = 'ls', scaled = FALSE, nfold = 5, seed = NULL, ...) {
+ers = function(x, y, covar, lambda2.start = NULL, lambda2.adapt = NULL, 
+               method = 'ls', scaled = FALSE, nfold = 5, seed = NULL, ...) {
   
-  x = 
-  y = 
-  method = 'ls'
   #family = gaussian, binomial, poisson, cox?
   
-  if(any(!complete.cases(x)) | any(!complete.cases(y))) {
-    stop('x or y contain missing value')
+  if(any(!complete.cases(x)) | any(!complete.cases(y)) | any(!complete.cases(covar))) {
+    stop('x, y, or covar contain missing values. This method requires complete data.') }
+  n = length(y)
+  if(nrow(x) != n | nrow(covar) != n) {
+    stop('y is not the same length as x or covar. y should be a vector of same 
+         length as the number of rows in x and covar.')
   }
-  
-  if(!isTRUE(scaled)) {
-    # scale, center
+  if(!isTRUE(scaled)) { x = scale(x, center = TRUE, scale = TRUE) } # scale, center
+  if(!is.null(seed)) { set.seed(seed) }
+  if(is.null(lambda2.start)) {
+    # auto-generate lambda2.start sequence.
   }
+  foldid = matrix(data = c(sample(n), rep(1:nfold, length = n)), nrow = n, ncol = 2)
+  data.mod = cbind(model.matrix(~-1+.^2, data = x), x^2, covar)
   
-  if(!is.null(seed)) {
-    set.seed(seed)
-  }
+  # steps 1-3
+  enet.init = ers.enet(x = data.mod, y = y, lambda2 = lambda2, nfolds = nfolds,
+                       foldid = foldid, pf = pf, pf2 = pf2, method = method)
   
-  methods = c('gcdnet', 'glmnet')
+  # steps 4
+  enet.adapt = ers.enet(x = data.mod.nonzero, y = y, lambda2 = lambda2, nfolds = nfolds,
+                        foldid = foldid, pf = pf, pf2 = pf2, method = method)
   
+  # step 5
+  er.score = beta * x
   
-  fit =
-    switch(which(method == methods),
-           ers.gcdnet(),
-           ers.glmnet())
+  # adjusted R2
+  # and out-of-bag (OOB) adjusted R2
+  # using
+  # cross-validation. We also computed the mean squared error (MSE) and the mean squared prediction
+  # error (MSPE) to compare the prediction performance. 
   
+}
+
+print.ers = function(x, ...) {
   
-  
-  return(
-    list(beta_test, beta_train)
-  )
+}
+
+plot.ers = function(x, ...) {
   
 }
 
