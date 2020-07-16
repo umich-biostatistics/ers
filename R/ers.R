@@ -58,6 +58,21 @@ ers = function(x, y, covar, lambda2.start = NULL, lambda2.adapt = NULL,
   
 }
 
+# define sets of model parameter values to evaluate
+# for each parameter set
+#  for each resampling iteration
+#   hold out specific samples
+#   fit the model on the remainder
+#   predict the hold-out samples
+#  end
+#  calculate the average performance across hold-out predictions
+# end
+# determine the optimal parameter set
+# fit the final model to all the training data using the optimal parameter set
+train = function() {
+  
+}
+
 print.ers = function(x, ...) {
   
 }
