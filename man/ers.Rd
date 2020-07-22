@@ -7,9 +7,8 @@
 ers(
   x,
   y,
-  covar,
-  lambda2.start = NULL,
-  lambda2.adapt = NULL,
+  covar = NULL,
+  control = list(lambda2.start = NULL, lambda2.adapt = NULL),
   method = "ls",
   scaled = FALSE,
   nfold = 5,
@@ -21,8 +20,10 @@ ers(
 Compute environmental risk score
 }
 \examples{
-covar = covs
-ers(x = metals, y = as.numeric(Y), covar = covs, 
-    lambda2.start = seq(0.00001, 0.01, by = 0.001),
-    lambda2.adapt = seq(0.00001, 0.01, by = 0.001))
+tic()
+set.seed(7794)
+fit = ers(x = metal, y = as.numeric(Y), covar = covs,
+          control = list(lambda2.start = seq(0.001, 0.5, by = 0.01),
+                         lambda2.adapt = seq(0.001, 0.5, by = 0.01)))
+toc()
 }

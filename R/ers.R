@@ -10,15 +10,6 @@
 #' ers.enet(x = metal, y = as.numeric(Y), foldid = foldid[,2], lambda2 = seq(0.00001, 0.01, by = 0.001))
 # standalone function for steps 1-3 of algorithm
 ers.enet = function(x, y, lambda2, nfolds = 5, foldid, pf = rep(1, p), pf2 = rep(1, p), method = 'ls') {
-  # x = metal
-  # y = as.numeric(Y)
-  # lambda2 = seq(0.00001, 0.01, by = 0.001)
-  # nfolds = 5
-  # n = length(Y)
-  # foldid = matrix(data = c(sample(n), rep(1:nfold, length = n)), nrow = n, ncol = 2)
-  # foldid = foldid[order(foldid[,1]),]
-  # foldid = foldid[,2]
-  
   cv.lambda2 = vapply(lambda2, function(lambda) {
     min(cv.gcdnet(x = x, y = y, lambda2 = lambda, nfolds = nfolds, 
                   foldid = foldid, pf = pf, pf2 = pf2, method = method)$cvm)
@@ -26,6 +17,10 @@ ers.enet = function(x, y, lambda2, nfolds = 5, foldid, pf = rep(1, p), pf2 = rep
   cv.lambda2.min = lambda2[which.min(cv.lambda2)]
   cv.lambda1.min = cv.gcdnet(x = x, y = y, lambda2 = cv.lambda2.min, nfolds = nfolds, foldid = foldid, 
             method = method, pf = pf, pf2 = pf2)$lambda.min
+  cat(cv.lambda2.min)
+  cat('\n')
+  cat(cv.lambda1.min)
+  cat('\n')
   return(gcdnet(x = x, y = y, lambda = cv.lambda1.min, lambda2 = cv.lambda2.min, 
                 pf = pf, pf2 = pf2, method = method))
 }
@@ -72,7 +67,7 @@ ers.aenet = function(data.mod, y, lambda2.start, lambda2.adapt, nfolds, foldid, 
                        foldid = foldid, pf = pf, pf2 = pf2, method = method)
   beta.enet = coef(enet.init)[-1]
   beta.enet.nonzero = beta.enet != 0
-  adapt.weights = adaptive.weights(coef = beta.enet, sd = sapply(data.mod, sd), n = nrow(data.mod))
+  adapt.weights = adaptive.weights(coef = beta.enet, sd = apply(data.mod, 2, sd), n = nrow(data.mod))
   adapt.weights[pf == 0] = 0
   data.mod.nonzero = data.mod[,beta.enet.nonzero]
   adapt.weights = adapt.weights[beta.enet.nonzero]
@@ -81,7 +76,9 @@ ers.aenet = function(data.mod, y, lambda2.start, lambda2.adapt, nfolds, foldid, 
                   foldid = foldid, pf = adapt.weights, pf2 = pf2, method = method))
 }
 
-#'
+#' ERS score
+#' 
+#' Computes ERS score. For internal use.
 #'
 #' @examples 
 #' 
@@ -96,23 +93,19 @@ ers.score = function(data, coef) {
 #' Compute environmental risk score
 #'
 #' @examples 
-#' covar = covs
-#' ers(x = metals, y = as.numeric(Y), covar = covs, 
-#'     lambda2.start = seq(0.00001, 0.01, by = 0.001),
-#'     lambda2.adapt = seq(0.00001, 0.01, by = 0.001))
-ers = function(x, y, covar, lambda2.start = NULL, lambda2.adapt = NULL, 
+#' tic()
+#' set.seed(7794)
+#' fit = ers(x = metal, y = as.numeric(Y), covar = covs,
+#'           control = list(lambda2.start = seq(0.001, 0.5, by = 0.01),
+#'                          lambda2.adapt = seq(0.001, 0.5, by = 0.01)))
+#' toc()
+ers = function(x, y, covar = NULL, control = list(lambda2.start = NULL, lambda2.adapt = NULL), 
                method = 'ls', scaled = FALSE, nfold = 5, seed = NULL, ...) {
-  x 
-  y
-  covar
-  lambda2.start = NULL 
-  lambda2.adapt = NULL 
-  method = 'ls' 
-  scaled = FALSE 
-  nfold = 5 
-  seed = NULL
-  
   #family = gaussian, binomial, poisson, cox?
+  
+  x = as.data.frame(x)
+  lambda2.start = control$lambda2.start
+  lambda2.adapt = control$lambda2.adapt
   
   if(any(!complete.cases(x)) | any(!complete.cases(y)) | any(!complete.cases(covar))) {
     stop('x, y, or covar contain missing values. This method requires complete data.') }
@@ -121,7 +114,7 @@ ers = function(x, y, covar, lambda2.start = NULL, lambda2.adapt = NULL,
     stop('y is not the same length as x or covar. y should be a vector of same 
          length as the number of rows in x and covar.')
   }
-  if(!isTRUE(scaled)) { x = scale(x, center = TRUE, scale = TRUE) } # scale, center
+  #if(!isTRUE(scaled)) { x = as.data.frame(scale(x, center = TRUE, scale = TRUE)) } # scale, center
   if(!is.null(seed)) { set.seed(seed) }
   if(is.null(lambda2.start)) {
     # auto-generate lambda2.start sequence.
@@ -135,9 +128,9 @@ ers = function(x, y, covar, lambda2.start = NULL, lambda2.adapt = NULL,
   pf = c(rep(1, ncol(data.mod) + ncol(x.sq)), rep(0, ncol(covar)))
   names(x.sq) = paste0(names(x), '^2')
   data.mod = cbind(data.mod, x.sq, covar)
+  if(!isTRUE(scaled)) { data.mod = as.matrix(scale(data.mod, center = TRUE, scale = TRUE)) }
   
   pf2 = c(rep(1, ncol(data.mod)))
-  method = 'ls'
   
   ers.fit = ers.aenet(data.mod, y, lambda2.start, lambda2.adapt, nfolds, foldid, pf, pf2, method)
   ers.beta = as.matrix(coef(ers.fit))
@@ -148,8 +141,14 @@ ers = function(x, y, covar, lambda2.start = NULL, lambda2.adapt = NULL,
   tab.metals = subset(tab, !(row.names(tab) %in% c('(Intercept)', colnames(covar))))
   
   # step 5
-  ers.score(data = as.matrix(data.mod[,rownames(tab.metals)]), coef = as.numeric(tab.metals))
+  ers.scores = ers.score(data = as.matrix(data.mod[,rownames(tab.metals)]), 
+                         coef = as.numeric(tab.metals))
   
+  
+  return(list(
+    ers.scores = ers.scores, 
+    ers.fit = ers.fit
+  ))
   # adjusted R2
   # and out-of-bag (OOB) adjusted R2
   # using
@@ -157,23 +156,41 @@ ers = function(x, y, covar, lambda2.start = NULL, lambda2.adapt = NULL,
   # error (MSPE) to compare the prediction performance. 
 }
 
+#' Test ERS results using performance measures
+#' 
+#' This function explores optimal tuning parameter values for the adaptive
+#' elastic net model. Using the trained model results, environmental risk 
+#' score is computed.
+#' 
+test = function(x, y, covar = NULL, fit) {
+  
+}
 
-# define sets of model parameter values to evaluate
-# for each parameter set
-#  for each resampling iteration
-#   hold out specific samples
-#   fit the model on the remainder
-#   predict the hold-out samples
-#  end
-#  calculate the average performance across hold-out predictions
-# end
-# determine the optimal parameter set
-# fit the final model to all the training data using the optimal parameter set
-#'
+#' Train Adaptive ENET Model for ERS
+#' 
+#' This function explores optimal tuning parameter values for the adaptive
+#' elastic net model. Using the trained model results, environmental risk 
+#' score is computed.
+#' 
+#' \bold{Algorithm:}
+#' \preformatted{
+#' define sets of model parameter values to evaluate
+#' |for each parameter set
+#' | |for each resampling iteration
+#' | |    hold out specific samples
+#' | |    fit the model on the remainder
+#' | |    predict the hold-out samples
+#' | |  end
+#' |   calculate the average performance across hold-out predictions
+#' |  end
+#'  determine the optimal parameter set
+#'  fit the final model to all the training data using the optimal parameter set
+#' }
+#'  
 #'
 #' @examples 
 #' 
-train = function() {
+train = function(x, y, covar = NULL, control = list(method = 'cv')) {
   
 }
 
@@ -202,6 +219,6 @@ plot.ers = function(x, ...) {
   
 }
 
-# #' @description Environmental risk score using adaptive elastic net regression.
-# #' 
+# # @description Environmental risk score using adaptive elastic net regression.
+# # 
 # "_PACKAGE"
