@@ -144,16 +144,29 @@ ers = function(x, y, covar = NULL, control = list(lambda2.start = NULL, lambda2.
   ers.scores = ers.score(data = as.matrix(data.mod[,rownames(tab.metals)]), 
                          coef = as.numeric(tab.metals))
   
-  
-  return(list(
+  ers.obj = list(
     ers.scores = ers.scores, 
     ers.fit = ers.fit
-  ))
+  )
+  class(ers.obj) = 'ers'
+  
+  return(ers.obj)
   # adjusted R2
   # and out-of-bag (OOB) adjusted R2
   # using
   # cross-validation. We also computed the mean squared error (MSE) and the mean squared prediction
   # error (MSPE) to compare the prediction performance. 
+}
+
+#' Make Environmental Risk Score Prediction
+#' 
+#' Given an ers fit, predict Environmental Risk Score (ERS)
+#'
+#' @examples 
+#' 
+predict.ers = function(object, new.x, new.covar = NULL, type = c('class', 'link'), ...) {
+  
+  predict.gcdnet(object$ers.fit)
 }
 
 #' Test ERS results using performance measures
