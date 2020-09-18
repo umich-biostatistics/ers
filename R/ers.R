@@ -139,14 +139,16 @@ ers = function(x, y, covar = NULL, control = list(lambda2.start = NULL, lambda2.
   rownames(tab) = rownames(ers.beta)[ers.beta.keep]
   tab[,1] = ers.beta[ers.beta.keep,]
   tab.metals = subset(tab, !(row.names(tab) %in% c('(Intercept)', colnames(covar))))
-  
+  coef = as.numeric(tab.metals)
+  dat.score = as.matrix(data.mod[,rownames(tab.metals)])
   # step 5
-  ers.scores = ers.score(data = as.matrix(data.mod[,rownames(tab.metals)]), 
-                         coef = as.numeric(tab.metals))
+  ers.scores = ers.score(data = dat.score, coef = coef)
   
   ers.obj = list(
     ers.scores = ers.scores, 
-    ers.fit = ers.fit
+    ers.fit = ers.fit,
+    coef = coef, 
+    dat.score = dat.score
   )
   class(ers.obj) = 'ers'
   
@@ -156,6 +158,12 @@ ers = function(x, y, covar = NULL, control = list(lambda2.start = NULL, lambda2.
   # using
   # cross-validation. We also computed the mean squared error (MSE) and the mean squared prediction
   # error (MSPE) to compare the prediction performance. 
+}
+
+# this is just for testing purposes. I want to test the model fit to make 
+# sure this method is actually working.
+model.test = function(fit) {
+  
 }
 
 #' Make Environmental Risk Score Prediction
