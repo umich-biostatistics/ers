@@ -10,18 +10,20 @@ knitr::opts_chunk$set(
   comment = "#>",
   fig.path = "man/figures"
 )
+library(ers)
 ```
 
-# R package `AEenrich`
+# R package `ers`
 
-`r badger::badge_devel("umich-biostatistics/AEenrich", "blue")` `r badger::badge_code_size("umich-biostatistics/AEenrich")`
-
+`r badger::badge_devel("umich-biostatistics/ers", "blue")` `r badger::badge_code_size("umich-biostatistics/ers")`
 
 ## Overview
 
-Adverse event (AE) enrichment analysis. Unlike the continuous gene expression data, AE data are counts. Therefore, AE data has many zeros and ties. We propose two enrichment tests. One is a modified Fisher's exact test based on pre-selected significant AEs, while the other is based on a modified Kolmogorov-Smirnov statistic.
+Estimate environmental risk scores from a number of potentially correlated risk factors using adaptive elastic net (AENET) regression. ENET regression does variable selection and can select multiple non-zero collinear variables without overfitting. AENET is an adaptive version of elastic net (ENET) that satisfies the asymptotic normality assumption that allows us to conduct statistical inference any hypothesis testing by providing large sample standard errors and p-values. Adaptive weights shink smaller coefficients to zero, whereas larger coefficients are penalized less. The technical details of the model implemented here are described in "Associations of cumulative exposure to heavy metal mixtures with obesity and its comorbidities among U.S. adults in NHANES 2003–2014" (2018) In press at Environment International <doi:10.1016/j.envint.2018.09.035>.
 
 ## Installation
+
+You should have `R` at least version 3.5.0 installed before trying to install this package.
 
 If the devtools package is not yet installed, install it first:
 
@@ -33,8 +35,8 @@ Then run:
 
 ```{r, eval = FALSE}
 # install AEenrich from Github:
-devtools::install_github('umich-biostatistics/AEenrich') 
-library(AEenrich)
+devtools::install_github('umich-biostatistics/ers') 
+library(ers)
 ```
 
 ## Example usage
@@ -42,37 +44,29 @@ library(AEenrich)
 For documentation pages:
 
 ```{r, eval = FALSE}
-?AEenrich
-?enrich
+?ers
 ```
 
 ### Quick example: 
 
+```{r}
+names(metal)
+head(metal)
+names(Y)
+head(Y)
+names(covs)
+head(covs)
+```
+
+
 ```{r, eval = FALSE}
-##---Experiment 1 
-drug.case = 'FLUN'
-drug.control = 'FLU'
-
-# AEKS
-## Data Type 1
-KS_result1 = enrich(df = flu1, dd.group = group, drug.case = drug.case, 
-                    drug.control = drug.control, method = 'aeks', n_iter = 1000)
-## Data Type 2
-KS_result2 = enrich(df = flu2, dd.group = group, drug.case = drug.case, 
-                    drug.control = drug.control, method = 'aeks', n_iter = 1000)
-
-# AEFisher
-## Data Type 1
-fisher_result1 = enrich(df = flu1, dd.group = group, drug.case = drug.case, 
-                        drug.control = drug.control, method = 'aefisher', 
-                        n_iter = 1000, q.cut = 0.1, or.cut=1.5)
-## Data Type 2
-fisher_result2 = enrich(df = flu2, dd.group = group, drug.case = drug.case, 
-                        drug.control = drug.control, method = 'aefisher', 
-                        n_iter = 1000, q.cut = 0.1, or.cut=1.5)
+set.seed(7794)
+fit = ers(x = metal, y = as.numeric(Y), covar = covs,
+          control = list(lambda2.start = seq(0.001, 0.5, by = 0.01),
+                         lambda2.adapt = seq(0.001, 0.5, by = 0.01)))
 ```
 
 ### Current Suggested Citation
 
-Li, S. and Zhao, L. (2020). Adverse event enrichment tests using VAERS. [arXiv:2007.02266](https://arxiv.org/abs/2007.02266).
+Wang, Xin, Bhramar Mukherjee, and Sung Kyun Park. "Associations of cumulative exposure to heavy metal mixtures with obesity and its comorbidities among US adults in NHANES 2003–2014." Environment international 121 (2018): 683-694. [doi:10.1016/j.envint.2018.09.035](https://doi.org/10.1016/j.envint.2018.09.035).
 

@@ -17,10 +17,10 @@ ers.enet = function(x, y, lambda2, nfolds = 5, foldid, pf = rep(1, p), pf2 = rep
   cv.lambda2.min = lambda2[which.min(cv.lambda2)]
   cv.lambda1.min = cv.gcdnet(x = x, y = y, lambda2 = cv.lambda2.min, nfolds = nfolds, foldid = foldid, 
             method = method, pf = pf, pf2 = pf2)$lambda.min
-  cat(cv.lambda2.min)
-  cat('\n')
-  cat(cv.lambda1.min)
-  cat('\n')
+  #cat(cv.lambda2.min)
+  #cat('\n')
+  #cat(cv.lambda1.min)
+  #cat('\n')
   return(gcdnet(x = x, y = y, lambda = cv.lambda1.min, lambda2 = cv.lambda2.min, 
                 pf = pf, pf2 = pf2, method = method))
 }
@@ -90,15 +90,18 @@ ers.score = function(data, coef) {
 
 #' Environmental Risk Score
 #' 
-#' Compute environmental risk score
+#' Estimate environmental risk scores from a number of potentially correlated risk 
+#' factors using adaptive elastic net (AENET) regression. ENET regression does variable 
+#' selection and can select multiple non-zero collinear variables without overfitting. 
+#' AENET is an adaptive version of elastic net (ENET) that satisfies the asymptotic 
+#' normality assumption that allows us to conduct statistical inference any hypothesis 
+#' testing by providing large sample standard errors and p-values.
 #'
-#' @examples 
-#' tic()
+#' @examples
 #' set.seed(7794)
 #' fit = ers(x = metal, y = as.numeric(Y), covar = covs,
 #'           control = list(lambda2.start = seq(0.001, 0.5, by = 0.01),
 #'                          lambda2.adapt = seq(0.001, 0.5, by = 0.01)))
-#' toc()
 ers = function(x, y, covar = NULL, control = list(lambda2.start = NULL, lambda2.adapt = NULL), 
                method = 'ls', scaled = FALSE, nfold = 5, seed = NULL, ...) {
   #family = gaussian, binomial, poisson, cox?

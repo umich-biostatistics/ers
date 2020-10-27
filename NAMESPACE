@@ -1,2 +1,4 @@
 
+importFrom(gcdnet, gcdnet)
+importFrom(gcdnet, cv.gcdnet)
 export(ers)

@@ -2,7 +2,19 @@ Package: ers
 Version: 1.0.0
 Title: Environmental Risk Score
 Type: Package
-Description: desc
+Description: Estimate environmental risk scores from a number of potentially 
+    correlated risk factors using adaptive elastic net (AENET) regression. ENET 
+    regression does variable 
+    selection and can select multiple non-zero collinear variables without 
+    overfitting. AENET is an adaptive version of elastic net (ENET) that satisfies
+    the asymptotic normality assumption that allows us to conduct statistical 
+    inference any hypothesis testing by providing large sample standard errors 
+    and p-values. Adaptive weights shink smaller coefficients to zero, whereas
+    larger coefficients are penalized less. The technical details of the model 
+    implemented here are described in "Associations of cumulative exposure to 
+    heavy metal mixtures with obesity and its comorbidities among U.S. adults in 
+    NHANES 2003–2014" (2018) In press at Environment International
+    <doi:10.1016/j.envint.2018.09.035>.
 Authors@R: c(
     person(given = "Sung Kyun", family = "Park", role = c("aut"), email = "sungkyun@umich.edu"),
     person(given = "Bhramar", family = "Mukherjee", role = c("aut"), email = "bhramar@umich.edu"),
@@ -19,5 +31,4 @@ URL: https://github.com/umich-biostatistics/ers
 BugReports: https://github.com/umich-biostatistics/ers/issues
 RoxygenNote: 7.1.1
 Roxygen: list(markdown = TRUE)
-Suggests: 
-    testthat
+Suggests: testthat

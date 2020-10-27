@@ -17,13 +17,16 @@ ers(
 )
 }
 \description{
-Compute environmental risk score
+Estimate environmental risk scores from a number of potentially correlated risk
+factors using adaptive elastic net (AENET) regression. ENET regression does variable
+selection and can select multiple non-zero collinear variables without overfitting.
+AENET is an adaptive version of elastic net (ENET) that satisfies the asymptotic
+normality assumption that allows us to conduct statistical inference any hypothesis
+testing by providing large sample standard errors and p-values.
 }
 \examples{
-tic()
 set.seed(7794)
 fit = ers(x = metal, y = as.numeric(Y), covar = covs,
           control = list(lambda2.start = seq(0.001, 0.5, by = 0.01),
                          lambda2.adapt = seq(0.001, 0.5, by = 0.01)))
-toc()
 }
